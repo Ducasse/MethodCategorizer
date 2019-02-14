@@ -78,26 +78,6 @@ ProtocolAnalyzer >> findInconsistenciesForASelector: aSymbol thatIsNotInProtocol
 ]
 
 { #category : #analyses }
-ProtocolAnalyzer >> fix: aClass withProtocol: source toBeNamed: target [
-	"Watch out, does not pay attention to extensions!"
-	"self new fix: RBMetaclass withProtocol: 'initialize-release' toBeNamed: 'initialize'"
-	
-	| selectorsToReclassify | 
-	selectorsToReclassify := (aClass organization protocolOrganizer methodsInProtocolNamed: source).
-	selectorsToReclassify do: [ :s | 
-	aClass organization 
-				classify: s
-				under: target].
-]
-
-{ #category : #analyses }
-ProtocolAnalyzer >> fixAllProtocol: source toBeNamed: target [
-
-		self shouldBeImplemented 
-	
-]
-
-{ #category : #analyses }
 ProtocolAnalyzer >> fixInconsistenciesOf: aSelector toBeInProtocol: aProtocol [
 	"Changes the protocol to all the methods of selector, aSelector, to be aProtocol"
 	"self new fixInconsistenciesOf: #printOn: toBeInProtocol: 'printing'"
@@ -108,13 +88,6 @@ ProtocolAnalyzer >> fixInconsistenciesOf: aSelector toBeInProtocol: aProtocol [
 					classify: aMethodDefinition selector
 					under: aProtocol ]
 
-	
-]
-
-{ #category : #analyses }
-ProtocolAnalyzer >> fixProtocol: source toBeNamed: target [
-
-	
 	
 ]
 
@@ -148,6 +121,19 @@ ProtocolAnalyzer >> mostCommonlyDefinedSelectors [
 ]
 
 { #category : #analyses }
+ProtocolAnalyzer >> renameProtocol: source to: target in: aClass [
+	"Watch out, does not pay attention to extensions!"
+	"self new renameProtocol: 'initialize-release' to: 'initialization' in: RBAbstractClass"
+	
+	| selectorsToReclassify | 
+	selectorsToReclassify := (aClass organization protocolOrganizer methodsInProtocolNamed: source).
+	selectorsToReclassify do: [ :s | 
+	aClass organization 
+				classify: s
+				under: target].
+]
+
+{ #category : #analyses }
 ProtocolAnalyzer >> statisticFor: aSymbol [
 	"self new statisticFor: #printOn:"
 	"self new statisticFor: #initialize"
@@ -163,4 +149,17 @@ ProtocolAnalyzer >> statisticFor: aSymbol [
 					(cat beginsWith: '*')
 						ifFalse: [ result add: cat ] ] ].
 	^ result sortedCounts
+]
+
+{ #category : #analyses }
+ProtocolAnalyzer >> systemRenameProtocol: source to: target [
+	"self new systemRenameProtocol: 'initialize-release' to: 'initialization'"
+
+	| classes |
+	classes := self allClassesAndTraits
+		select:
+			[ :class | class organization protocolOrganizer hasProtocolNamed: source ].
+	classes
+		do: [ :class | self renameProtocol: source to: target in: class ].
+	^ classes
 ]
