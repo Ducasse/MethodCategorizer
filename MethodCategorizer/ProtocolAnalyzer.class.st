@@ -51,12 +51,22 @@ Class {
 }
 
 { #category : #analyses }
+ProtocolAnalyzer >> findClassHavingProtocolNamed: aString [ 
+	"self new findClassHavingProtocolNamed: #'initialize-release'"
+
+	^ self allClassesAndTraits select: [ :each | 
+		each organization allProtocolsNames includes: aString ].
+	
+]
+
+{ #category : #analyses }
 ProtocolAnalyzer >> findInconsistenciesForASelector: aSymbol thatIsNotInProtocol: aString [
 	"Pay attention it filters extensions."
 	"self new findInconsistenciesForASelector: #initialize thatIsNotInProtocol: 'initialization'"
 
 	| implementingClasses resultingMethods |
-	implementingClasses := self allClassesAndTraits select: [ :each | each includesSelector: aSymbol ].
+	implementingClasses := self allClassesAndTraits select: [ :each | 
+		each includesSelector: aSymbol ].
 	resultingMethods := OrderedCollection new: implementingClasses size. 
 	implementingClasses do: [ :each | 
 			| cat |
@@ -65,6 +75,26 @@ ProtocolAnalyzer >> findInconsistenciesForASelector: aSymbol thatIsNotInProtocol
 				ifFalse: [ resultingMethods add: ((RGMethodDefinition class: each selector: aSymbol ) protocol: cat; yourself) ] 
 			 ].
 	^ resultingMethods
+]
+
+{ #category : #analyses }
+ProtocolAnalyzer >> fix: aClass withProtocol: source toBeNamed: target [
+	"Watch out, does not pay attention to extensions!"
+	"self new fix: RBMetaclass withProtocol: 'initialize-release' toBeNamed: 'initialize'"
+	
+	| selectorsToReclassify | 
+	selectorsToReclassify := (aClass organization protocolOrganizer methodsInProtocolNamed: source).
+	selectorsToReclassify do: [ :s | 
+	aClass organization 
+				classify: s
+				under: target].
+]
+
+{ #category : #analyses }
+ProtocolAnalyzer >> fixAllProtocol: source toBeNamed: target [
+
+		self shouldBeImplemented 
+	
 ]
 
 { #category : #analyses }
@@ -81,8 +111,15 @@ ProtocolAnalyzer >> fixInconsistenciesOf: aSelector toBeInProtocol: aProtocol [
 	
 ]
 
+{ #category : #analyses }
+ProtocolAnalyzer >> fixProtocol: source toBeNamed: target [
+
+	
+	
+]
+
 { #category : #'may be useless' }
-ProtocolAnalyzer >> methodDefinitionFor: aSelector thatIsInProtocol: aString [
+ProtocolAnalyzer >> methodDefinitionsFor: aSelector thatIsInProtocol: aString [
 	"Pay attention it filters extensions."
 	"self new methodDefinitionFor: #initialize thatIsInProtocol: #shout"
 
